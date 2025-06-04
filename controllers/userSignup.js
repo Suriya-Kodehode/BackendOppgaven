@@ -7,36 +7,35 @@ export const userSignup = async (req, res) => {
 
     try {
         if (!email || !password) {
-            // console.warn("Email and password are required");
             return res.status(400).json({ error: ERROR_MESSAGES.signup.required });
         }
 
         if (!emailRegex.test(email)) {
-            // console.warn("Invalid email format:", email);
             return res.status(400).json({ error: "Invalid email format" });
         }
         if (password.length < 6) {
-            // console.warn("Password too short");
             return res.status(400).json({ error: "Password must be at least 6 characters long" });
         }
 
-        const existingUser = await checkUser({ userName, email });
+        const existingUser = await checkUser({ userName: userName ?? null, email });
         if (existingUser) {
             const conflictField = existingUser[0]?.Email === email ? "Email" : "Username";
-            // console.warn(`${conflictField} already exists`);
-            return res.status(409).json({ error: ERROR_MESSAGES.signup.exists });
+            return res.status(409).json({ error: ERROR_MESSAGES.signup.exists, conflictField });
         }
 
-        const response = await addUser({ email, userName: userName || null, password });
-        // console.log("Response from addUser:", response);
-
-        return res.status(201).json({ message: "User has signed up successfully" });
+        try {
+            const response = await addUser({ email, userName: userName ?? null, password });
+            return res.status(201).json({ message: response.message, data: response.data });
+        } catch (err) {
+            if (err instanceof ReqError) {
+                return res.status(err.status).json({ error: err.message });
+            }
+            return res.status(500).json({ error: err.message || ERROR_MESSAGES.server.unexpected });
+        }
     } catch (err) {
         if (err instanceof ReqError) {
-            // console.error("ReqError caught:", { status: err.status, message: err.message });
             return res.status(err.status).json({ error: err.message });
         }
-        // console.error("Unexpected error during userSignup:", err.message);
         return res.status(500).json({ error: ERROR_MESSAGES.server.unexpected });
     }
 };

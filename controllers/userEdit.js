@@ -2,11 +2,15 @@ import { editUser } from "../util/dbQueries.js";
 import { ReqError, ERROR_MESSAGES } from "../middleware/errorHandler.js";
 
 export const userEdit = async (req, res) => {
+    // Debug: log entry into controller
+    // console.log("userEdit controller called");
+    // console.log("Request body:", req.body);
+
     const { newUsername, newPassword, newEmail } = req.body;
 
     try {
         if (!newUsername && !newPassword && !newEmail) {
-            // console.warn("No fields provided for update");
+            console.warn("No fields provided for update");
             return res.status(400).json({ error: ERROR_MESSAGES.editUser.unknown });
         }
 
@@ -14,12 +18,15 @@ export const userEdit = async (req, res) => {
         // console.log("Authorization header:", authHeader);
 
         if (!authHeader || !authHeader.startsWith("Bearer ")) {
-            // console.warn("Missing or invalid token in Authorization header");
+            console.warn("Missing or invalid token in Authorization header");
             return res.status(401).json({ error: ERROR_MESSAGES.auth.missing });
         }
 
         const token = authHeader.slice(7).trim();
         // console.log("Raw token:", token);
+
+        // Debug: log about to call editUser
+        // console.log("About to call editUser with:", { token, newUsername, newPassword, newEmail });
 
         const userEdited = await editUser({
             token,
@@ -39,10 +46,10 @@ export const userEdit = async (req, res) => {
         });
     } catch (err) {
         if (err instanceof ReqError) {
-            // console.error("Request failed", { message: err.message, stack: err.stack, body: req.body });
+            console.error("Request failed", { message: err.message, stack: err.stack, body: req.body });
             return res.status(err.status).json({ error: err.message });
         }
-        // console.error("Unexpected error during user edit", { message: err.message, stack: err.stack, body: req.body });
+        console.error("Unexpected error during user edit", { message: err.message, stack: err.stack, body: req.body });
         return res.status(500).json({ error: ERROR_MESSAGES.server.unexpected });
     }
 };

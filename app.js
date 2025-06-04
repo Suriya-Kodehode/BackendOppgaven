@@ -1,3 +1,6 @@
+import ensureJwtSecret from './util/config.js';
+ensureJwtSecret();
+
 import createError from 'http-errors';
 import express from 'express';
 import path from 'path';
@@ -19,9 +22,10 @@ app.use(cookieParser());
 app.use(express.static(path.join(process.cwd(), 'public')));
 
 app.use(transformToLowercaseMiddleware());
+
 app.use(
     cors({
-        origin: "http://localhost:5173",
+        origin: process.env.CORS_ORIGIN || "http://localhost:5173",
         credentials: true,
     })
 );

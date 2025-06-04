@@ -4,9 +4,16 @@ import fs from 'fs';
 
 const ENV_FILE_PATH = '.env';
 
-export function ensureJwtSecret() {
+function stripQuotes(value) {
+    if (typeof value === 'string' && value.startsWith('"') && value.endsWith('"')) {
+        return value.slice(1, -1);
+    }
+    return value;
+}
+
+function ensureJwtSecret() {
     config();
-    let secret = process.env.JWT_SECRET;
+    let secret = stripQuotes(process.env.JWT_SECRET);
     if (!secret) {
         let envConfig = [];
         if (fs.existsSync(ENV_FILE_PATH)) {
@@ -14,17 +21,21 @@ export function ensureJwtSecret() {
         }
         const jwtSecretIndex = envConfig.findIndex(line => line.trim().startsWith('JWT_SECRET='));
         if (jwtSecretIndex !== -1) {
-            secret = envConfig[jwtSecretIndex].split('=')[1]?.trim();
+            secret = stripQuotes(envConfig[jwtSecretIndex].split('=')[1]?.trim());
         }
         if (!secret) {
             secret = crypto.randomBytes(64).toString('hex');
             if (jwtSecretIndex !== -1) {
-                envConfig[jwtSecretIndex] = `JWT_SECRET=${secret}`;
+                envConfig[jwtSecretIndex] = `JWT_SECRET="${secret}"`;
                 fs.writeFileSync(ENV_FILE_PATH, envConfig.join('\n'));
             } else {
-                fs.appendFileSync(ENV_FILE_PATH, `\nJWT_SECRET=${secret}`);
+                fs.appendFileSync(ENV_FILE_PATH, `\nJWT_SECRET="${secret}"`);
             }
         }
         process.env.JWT_SECRET = secret;
+    } else {
+        process.env.JWT_SECRET = secret;
     }
 }
+
+export default ensureJwtSecret;

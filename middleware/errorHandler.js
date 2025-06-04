@@ -40,8 +40,7 @@ export class ReqError extends Error {
     constructor(status, message, details = null) {
         super(message);
         this.status = status;
-        this.name = 'ReqError';
-        if (details) this.details = details;
+        this.details = details;
     }
 }
 
@@ -56,3 +55,7 @@ export const handleError = (error, res) => {
 };
 
 export const errorMiddleware = (err, req, res, next) => handleError(err, res);
+
+export const errorHandler = {
+    s: (...args) => console.error(...args)
+};

@@ -1,6 +1,5 @@
 import jwt from 'jsonwebtoken';
 import { validateToken } from '../util/dbQueries.js';
-import { hashtoken } from '../util/util.js';
 import { ERROR_MESSAGES, ReqError } from './errorHandler.js';
 
 const authToken = async (req, res, next) => {
@@ -35,11 +34,9 @@ const authToken = async (req, res, next) => {
                 return next(new ReqError(401, ERROR_MESSAGES.auth.verify));
             }
         }
-        
-        const hashedToken = hashtoken(token);
-        // console.log("Hashed token:", hashedToken.toString('hex'));
 
-        const tokenValid = await validateToken(hashedToken);
+        // Use the raw token for DB validation (do NOT hash)
+        const tokenValid = await validateToken(token);
         if (!tokenValid) {
             console.error("Token is invalid or expired in the database");
             return next(new ReqError(401, ERROR_MESSAGES.token.invalid));

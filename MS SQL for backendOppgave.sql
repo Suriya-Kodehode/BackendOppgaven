@@ -1,4 +1,3 @@
-
 --use master;
 --alter database backendOppgave set single_user with rollback immediate;
 --drop database backendOppgave;
@@ -22,7 +21,7 @@ create table t_UsersTokens (
     ID bigint identity(1,1) primary key not null,
     DateCreated datetime not null,
     UserID bigint not null,
-    Token varbinary(4000) not null,
+    Token nvarchar(4000) not null,
     TokenValidDate datetime not null,
 
     foreign key (UserID) references t_Users(UserID) on delete cascade
@@ -109,7 +108,7 @@ go
 create procedure sp_Login 
     @Identifier nvarchar(100), 
     @Password nvarchar(100), 
-    @Token varbinary(4000),
+    @Token nvarchar(4000),
     @UserID bigint output,
     @ReturnCode int output
 as
@@ -192,7 +191,7 @@ end
 go
 
 create procedure sp_EditUser
-    @Token varbinary(4000),
+    @Token nvarchar(4000),
     @NewUsername nvarchar(100) = null,
     @NewPassword nvarchar(100) = null,
     @NewEmail nvarchar(100) = null,
@@ -242,7 +241,7 @@ begin
         if @NewUsername is not null
         begin	
             update t_Users
-            set UserName = @NewUsername
+            set Username = @NewUsername
             where UserID = @UserID;
         end
 
