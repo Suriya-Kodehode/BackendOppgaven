@@ -1,5 +1,5 @@
 import { editUser } from "../util/dbQueries.js";
-import { ReqError, ERROR_MESSAGES } from "../middleware/errorHandler.js";
+import { ReqError, ERROR_MESSAGES, handleError } from "../middleware/errorHandler.js";
 
 export const userEdit = async (req, res) => {
     // Debug: log entry into controller
@@ -45,11 +45,6 @@ export const userEdit = async (req, res) => {
             }
         });
     } catch (err) {
-        if (err instanceof ReqError) {
-            console.error("Request failed", { message: err.message, stack: err.stack, body: req.body });
-            return res.status(err.status).json({ error: err.message });
-        }
-        console.error("Unexpected error during user edit", { message: err.message, stack: err.stack, body: req.body });
-        return res.status(500).json({ error: ERROR_MESSAGES.server.unexpected });
+        return handleError(err, res);
     }
 };

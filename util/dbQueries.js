@@ -13,7 +13,7 @@ export const addUser = async ({ email, userName, password }) => {
     if (!email || !password) throw new ReqError(400, ERROR_MESSAGES.signup.required);
 
     // Log parameters for debugging
-    console.log("addUser params:", { userName, email, password });
+    // console.log("addUser params:", { userName, email, password });
 
     try {
         const [result] = await db.query(
@@ -46,7 +46,7 @@ export const addUser = async ({ email, userName, password }) => {
         }
     } catch (err) {
         // Log the error for debugging
-        console.error("addUser error:", err);
+        // console.error("addUser error:", err);
 
         // If it's a SequelizeDatabaseError, provide more details
         if (err.name === 'SequelizeDatabaseError' && err.parent) {
@@ -109,7 +109,7 @@ export const editUser = async ({ token, newUsername, newPassword, newEmail }) =>
     if (!newUsername && !newPassword && !newEmail) throw new ReqError(400, ERROR_MESSAGES.editUser.unknown);
 
     // Debug: log input parameters
-    console.log("editUser called with:", { token, newUsername, newPassword, newEmail });
+    // console.log("editUser called with:", { token, newUsername, newPassword, newEmail });
 
     const ReturnCode = await execSP(
         `DECLARE @ReturnCode INT;
@@ -129,7 +129,7 @@ export const editUser = async ({ token, newUsername, newPassword, newEmail }) =>
     );
 
     // Log the SQL return code for debugging
-    console.log("sp_EditUser ReturnCode:", ReturnCode);
+    // console.log("sp_EditUser ReturnCode:", ReturnCode);
 
     switch (ReturnCode) {
         case -1:

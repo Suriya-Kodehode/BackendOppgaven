@@ -10,9 +10,9 @@ export const transformToLowercase = (obj, preserveKeys = preservedKeys) => {
     );
 };
 
-export const transformToLowercaseMiddleware = (preserveKeys = preservedKeys) => (req, res, next) => {
-    if (req.body) req.body = transformToLowercase(req.body, preserveKeys);
-    if (req.query) req.query = transformToLowercase(req.query, preserveKeys);
-    if (req.params) req.params = transformToLowercase(req.params, preserveKeys);
+export const transformToLowercaseMiddleware = (req, res, next) => {
+    if (req.body) req.body = transformToLowercase(req.body);
+    if (req.query) req.query = transformToLowercase(req.query);
+    if (req.params) req.params = transformToLowercase(req.params);
     next();
 };

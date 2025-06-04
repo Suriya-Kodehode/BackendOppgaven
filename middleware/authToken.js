@@ -17,7 +17,7 @@ const authToken = async (req, res, next) => {
 
         const secret = process.env.JWT_SECRET;
         if (!secret) {
-            console.error("JWT_SECRET is not defined in the environment variables");
+            // console.log("JWT_SECRET is not defined in the environment variables");
             return next(new ReqError(500, ERROR_MESSAGES.auth.config));
         }
 
@@ -34,18 +34,17 @@ const authToken = async (req, res, next) => {
                 return next(new ReqError(401, ERROR_MESSAGES.auth.verify));
             }
         }
-
-        // Use the raw token for DB validation (do NOT hash)
+        
         const tokenValid = await validateToken(token);
         if (!tokenValid) {
-            console.error("Token is invalid or expired in the database");
+            // console.log("Token is invalid or expired in the database");
             return next(new ReqError(401, ERROR_MESSAGES.token.invalid));
         }
 
         req.user = decoded;
         next();
     } catch (err) {
-        console.error("Token verification failed:", err.message);
+        // console.log("Token verification failed:", err.message);
         return next(new ReqError(401, ERROR_MESSAGES.token.invalid, err.message));
     }
 }
