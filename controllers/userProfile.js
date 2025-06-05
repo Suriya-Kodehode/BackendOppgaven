@@ -27,6 +27,7 @@ export const userProfile = async (req, res) => {
         };
         // console.info(`User profile found: ${JSON.stringify(userProfile)}`);
         return res.status(200).json({
+            success: true,
             message: "User fetched successfully",
             profile: userProfile,
         });

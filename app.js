@@ -1,5 +1,5 @@
-import ensureJwtSecret from './util/config.js';
-ensureJwtSecret();
+import generateJwtSecret from './util/config.js';
+generateJwtSecret();
 
 import createError from 'http-errors';
 import express from 'express';
@@ -31,7 +31,7 @@ app.use(
 );
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use('/api/users', usersRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

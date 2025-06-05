@@ -11,7 +11,7 @@ export const userEdit = async (req, res) => {
     try {
         if (!newUsername && !newPassword && !newEmail) {
             console.warn("No fields provided for update");
-            return res.status(400).json({ error: ERROR_MESSAGES.editUser.unknown });
+            return res.status(400).json({ success: false, error: ERROR_MESSAGES.editUser.unknown });
         }
 
         const authHeader = req.headers.authorization;
@@ -19,7 +19,7 @@ export const userEdit = async (req, res) => {
 
         if (!authHeader || !authHeader.startsWith("Bearer ")) {
             console.warn("Missing or invalid token in Authorization header");
-            return res.status(401).json({ error: ERROR_MESSAGES.auth.missing });
+            return res.status(401).json({ success: false, error: ERROR_MESSAGES.auth.missing });
         }
 
         const token = authHeader.slice(7).trim();
@@ -37,6 +37,7 @@ export const userEdit = async (req, res) => {
         // console.log("EditUser response:", userEdited);
 
         return res.status(200).json({
+            success: true,
             message: userEdited.message || "User edited successfully",
             updatedField: {
                 newUsername: newUsername || "N/A",

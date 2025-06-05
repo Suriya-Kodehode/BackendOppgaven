@@ -24,7 +24,7 @@ export const userSignup = async (req, res) => {
         }
 
         const response = await addUser({ email, userName: userName ?? null, password });
-        return res.status(201).json({ message: response.message, data: response.data });
+        return res.status(201).json({ success: true, message: response.message, data: response.data });
     } catch (err) {
         return handleError(err, res);
     }

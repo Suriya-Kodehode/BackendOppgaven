@@ -6,7 +6,7 @@ export const userGet = async (req, res) => {
         const users = await getAllUsers();
         // console.log("Fetched users:", users);
 
-        return res.status(200).json({ message: "User fetched successfully", users });
+        return res.status(200).json({ success: true, message: "User fetched successfully", users });
     } catch (err) {
         return handleError(err, res);
     }

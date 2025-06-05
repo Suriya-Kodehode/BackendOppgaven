@@ -12,9 +12,6 @@ const execSP = async (query, replacements) => {
 export const addUser = async ({ email, userName, password }) => {
     if (!email || !password) throw new ReqError(400, ERROR_MESSAGES.signup.required);
 
-    // Log parameters for debugging
-    // console.log("addUser params:", { userName, email, password });
-
     try {
         const [result] = await db.query(
             `DECLARE @ReturnCode INT;
@@ -23,10 +20,6 @@ export const addUser = async ({ email, userName, password }) => {
             { replacements: { userName: userName ?? null, email, password }, type: db.QueryTypes.SELECT }
         );
 
-        // Log SQL result for debugging
-        console.log("sp_SignUp Result:", result);
-
-        // If result is undefined, throw an error
         if (!result || typeof result.ReturnCode === "undefined") {
             throw new ReqError(500, ERROR_MESSAGES.signup.unknown);
         }
@@ -45,10 +38,6 @@ export const addUser = async ({ email, userName, password }) => {
                 throw new ReqError(500, ERROR_MESSAGES.signup.unknown);
         }
     } catch (err) {
-        // Log the error for debugging
-        // console.error("addUser error:", err);
-
-        // If it's a SequelizeDatabaseError, provide more details
         if (err.name === 'SequelizeDatabaseError' && err.parent) {
             return Promise.reject(
                 new ReqError(500, `Database error: ${err.parent.message || err.message}`)
@@ -80,36 +69,38 @@ export const getAllUsers = async () => {
 };
 
 export const logIn = async (identifier, password, token) => {
-    const [result] = await db.query(
-        `DECLARE @ReturnCode INT; DECLARE @UserID BIGINT;
-         EXECUTE sp_Login
-            @Identifier = :identifier,
-            @Password = :password,
-            @Token = :token,
-            @UserID = @UserID OUTPUT,
-            @ReturnCode = @ReturnCode OUTPUT;
-         SELECT @ReturnCode AS ReturnCode, @UserID AS UserID;`,
-        { replacements: { identifier, password, token }, type: db.QueryTypes.SELECT }
-    );
+    try {
+        const [result] = await db.query(
+            `DECLARE @ReturnCode INT; DECLARE @UserID BIGINT;
+             EXECUTE sp_Login
+                @Identifier = :identifier,
+                @Password = :password,
+                @Token = :token,
+                @UserID = @UserID OUTPUT,
+                @ReturnCode = @ReturnCode OUTPUT;
+             SELECT @ReturnCode AS ReturnCode, @UserID AS UserID;`,
+            { replacements: { identifier, password, token }, type: db.QueryTypes.SELECT }
+        );
 
-    switch (result?.ReturnCode) {
-        case 0:
-            return result;
-        case -1:
-            throw new ReqError(401, ERROR_MESSAGES.login.invalid);
-        case -2:
-            throw new ReqError(500, ERROR_MESSAGES.login.db);
-        default:
-            throw new ReqError(500, ERROR_MESSAGES.login.unknown);
+        switch (result?.ReturnCode) {
+            case 0:
+                return result;
+            case -1:
+                throw new ReqError(401, ERROR_MESSAGES.login.invalid);
+            case -2:
+                throw new ReqError(500, ERROR_MESSAGES.login.db);
+            default:
+                throw new ReqError(500, ERROR_MESSAGES.login.unknown);
+        }
+    } catch (err) {
+        console.error("Login DB error:", err);
+        throw new ReqError(500, ERROR_MESSAGES.login.db);
     }
 };
 
 export const editUser = async ({ token, newUsername, newPassword, newEmail }) => {
     if (!token) throw new ReqError(400, ERROR_MESSAGES.editUser.token);
     if (!newUsername && !newPassword && !newEmail) throw new ReqError(400, ERROR_MESSAGES.editUser.unknown);
-
-    // Debug: log input parameters
-    // console.log("editUser called with:", { token, newUsername, newPassword, newEmail });
 
     const ReturnCode = await execSP(
         `DECLARE @ReturnCode INT;
@@ -127,9 +118,6 @@ export const editUser = async ({ token, newUsername, newPassword, newEmail }) =>
             newEmail: newEmail ?? null
         }
     );
-
-    // Log the SQL return code for debugging
-    // console.log("sp_EditUser ReturnCode:", ReturnCode);
 
     switch (ReturnCode) {
         case -1:
@@ -154,4 +142,21 @@ export const validateToken = async (token) => {
     );
     if (!tokenValid || !tokenValid.IsValid) throw new ReqError(401, ERROR_MESSAGES.token.invalid);
     return true;
+};
+
+export const deleteUser = async (token) => {
+    // Validate token and get UserID
+    const [userToken] = await db.query(
+        `SELECT UserID FROM t_UsersTokens WHERE Token = :token AND TokenValidDate > GETDATE();`,
+        { replacements: { token }, type: db.QueryTypes.SELECT }
+    );
+    if (!userToken || !userToken.UserID) {
+        throw new ReqError(401, ERROR_MESSAGES.token.invalid);
+    }
+    await db.query(
+        `DELETE FROM t_Users WHERE UserID = :userID;`,
+        { replacements: { userID: userToken.UserID }, type: db.QueryTypes.DELETE }
+    );
+
+    return { success: true, message: "User deleted successfully" };
 };

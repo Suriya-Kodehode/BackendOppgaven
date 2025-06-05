@@ -1,6 +1,9 @@
 --use master;
+--go
 --alter database backendOppgave set single_user with rollback immediate;
+--go
 --drop database backendOppgave;
+--go
 
 create database backendOppgave;
 go
@@ -115,16 +118,17 @@ as
 begin
     set nocount on;
 
-    begin transaction;
-
-    declare @Salt nvarchar(4000);
-    declare @HashedPassword varbinary(4000);
-    declare @CurrentTime datetime = getdate();
-
     begin try
+        begin transaction;
+
+        declare @Salt nvarchar(4000);
+        declare @HashedPassword varbinary(4000);
+        declare @CurrentTime datetime = getdate();
+
         if @Identifier is null or @Password is null
         begin
             set @ReturnCode = -1;
+            rollback transaction;
             return;
         end
 
@@ -135,6 +139,7 @@ begin
         if @Salt is null or @UserID is null
         begin
             set @ReturnCode = -1;
+            rollback transaction;
             return;
         end
 
@@ -143,11 +148,11 @@ begin
         if not exists (select 1 from t_Users 
         where (lower(Username) = lower(@Identifier) or lower(Email) = lower(@Identifier)) 
         and HPassword = @HashedPassword)
-
         begin
             insert into t_LogEvents (LogTime, LogType, LogText)
             values (getdate(), 'Login Error', 'Invalid passsword for: ' + @Identifier);
             set @ReturnCode = -1;
+            rollback transaction;
             return;
         end
 
@@ -169,7 +174,7 @@ begin
         commit transaction;
     end try
     begin catch
-        rollback transaction;
+        if @@TRANCOUNT > 0 rollback transaction;
 
         declare @ErrorMessage nvarchar(4000);
         declare @ErrorSeverity int;

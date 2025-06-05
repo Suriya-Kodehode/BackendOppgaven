@@ -14,6 +14,11 @@ export const ERROR_MESSAGES = {
         exists: "Username or email already exists",
         unknown: "Unexpected error occurred during user edit"
     },
+    deleteUser: {
+        token: "Invalid or expired token",
+        notFound: "User not found or already deleted.",
+        unknown: "Unexpected error occurred during user deletion"
+    },
     user: {
         notFound: "User not found.",
         fetch: "Error fetching users",
@@ -47,10 +52,18 @@ export class ReqError extends Error {
 export const handleError = (error, res) => {
     if (error instanceof ReqError) {
         console.warn(`Handled error [${error.status}]: ${error.message}`);
-        return res.status(error.status).json({ error: error.message, details: error.details || undefined });
+        return res.status(error.status).json({
+            success: false,
+            error: error.message,
+            details: error.details || undefined
+        });
     } else {
         console.error(`Unhandled error: ${error.stack}`);
-        return res.status(500).json({ error: ERROR_MESSAGES.server.unexpected });
+        return res.status(500).json({
+            success: false,
+            error: ERROR_MESSAGES.server.unexpected,
+            details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
     }
 };
 

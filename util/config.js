@@ -11,7 +11,7 @@ function stripQuotes(value) {
     return value;
 }
 
-function ensureJwtSecret() {
+function generateJwtSecret() {
     config();
     let secret = stripQuotes(process.env.JWT_SECRET);
     if (!secret) {
@@ -38,4 +38,4 @@ function ensureJwtSecret() {
     }
 }
 
-export default ensureJwtSecret;
+export default generateJwtSecret;
