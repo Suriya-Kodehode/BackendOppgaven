@@ -26,6 +26,7 @@ JWT_SECRET=
 <!-- ------------------------------- -->
 
 Here are all the necessary dependencies:
+npm install
 npm install cookie-parser cors crypto dotenv fs jsonwebtoken morgan nodemon sequelize tedious
 
 <!-- ------------------------------- -->
