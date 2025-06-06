@@ -11,7 +11,7 @@ DB_PASSWORD=""
 DB_HOST=""
 DB_NAME=""
 DB_PORT=""
-JWT_SECRET=""
+JWT_SECRET=
 
 Example:
 
