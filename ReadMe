@@ -1,0 +1,31 @@
+<!-- ------------------------------- -->
+
+This backend uses Microsoft SQL:
+- SQL Server Management Studio 20
+- SQL Server 2022 Configuration Manager
+
+First, create a .env file as follows:
+
+DB_USER=""
+DB_PASSWORD=""
+DB_HOST=""
+DB_NAME=""
+DB_PORT=""
+JWT_SECRET=""
+
+Example:
+
+DB_USER="sa"
+DB_PASSWORD="asdf"
+DB_HOST="SURIYAASUS\SQLEXPRESS"
+DB_NAME="backendOppgave"
+DB_PORT="1443"
+JWT_SECRET=
+
+<!-- ------------------------------- -->
+<!-- ------------------------------- -->
+
+Here are all the necessary dependencies:
+npm install cookie-parser cors crypto dotenv fs jsonwebtoken morgan nodemon sequelize tedious
+
+<!-- ------------------------------- -->

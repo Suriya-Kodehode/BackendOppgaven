@@ -39,9 +39,7 @@ export const addUser = async ({ email, userName, password }) => {
         }
     } catch (err) {
         if (err.name === 'SequelizeDatabaseError' && err.parent) {
-            return Promise.reject(
-                new ReqError(500, `Database error: ${err.parent.message || err.message}`)
-            );
+            throw new ReqError(500, `Database error: ${err.parent.message || err.message}`);
         }
         throw new ReqError(500, ERROR_MESSAGES.signup.unknown);
     }
@@ -93,6 +91,20 @@ export const logIn = async (identifier, password, token) => {
                 throw new ReqError(500, ERROR_MESSAGES.login.unknown);
         }
     } catch (err) {
+        if (
+            err instanceof ReqError &&
+            err.status === 401
+        ) {
+            throw err;
+        }
+        if (
+            err.name === 'SequelizeDatabaseError' &&
+            err.parent &&
+            err.parent.message &&
+            err.parent.message.toLowerCase().includes('invalid')
+        ) {
+            throw new ReqError(401, ERROR_MESSAGES.login.invalid);
+        }
         console.error("Login DB error:", err);
         throw new ReqError(500, ERROR_MESSAGES.login.db);
     }
